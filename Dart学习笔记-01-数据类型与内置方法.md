@@ -285,6 +285,66 @@ void main() {
 }
 ```
 
+### 5.1 常用运算符
+
+`bool` 的日常操作主要靠语言内建的运算符，而不是挂在对象上的方法。
+
+| 运算符 | 说明 |
+| --- | --- |
+| `!` | 取反 |
+| `&&` | 与（短路：左侧为 `false` 时不计算右侧） |
+| `\|\|` | 或（短路：左侧为 `true` 时不计算右侧） |
+| `==` / `!=` | 相等 / 不等 |
+| `&` / `\|` / `^` | 不短路的与 / 或 / 异或 |
+
+```dart
+void main() {
+  bool a = true;
+  bool b = false;
+
+  print(!a);            // false
+  print(a && b);        // false
+  print(a || b);        // true
+  print(a == b);        // false
+  print(a != b);        // true
+
+  print(a & b);         // false，不短路
+  print(a | b);         // true，不短路
+  print(a ^ b);         // true
+}
+```
+
+### 5.2 常用方法
+
+`bool` 自身的方法很少，其中静态方法 `bool.parse` / `bool.tryParse` 在做“字符串转布尔”时最常用。
+
+| 方法 | 说明 |
+| --- | --- |
+| `toString()` | 返回 `"true"` 或 `"false"` |
+| `hashCode` | 哈希码（继承自 `Object`） |
+| `bool.parse(String)` | 字符串转布尔，解析失败会抛异常 |
+| `bool.tryParse(String)` | 字符串转布尔，解析失败返回 `null` |
+
+```dart
+void main() {
+  bool isLogin = true;
+  print(isLogin.toString());   // 'true'
+  print(isLogin.hashCode);     // true/false 的哈希码
+  print(isLogin.runtimeType);  // bool
+
+  // 静态方法想把字符串转成布尔
+  print(bool.parse('true'));   // true
+  print(bool.parse('false'));  // false
+
+  // 默认区分大小写，只接受 "true" / "false"
+  print(bool.tryParse('TRUE'));                       // null
+  print(bool.tryParse('TRUE', caseSensitive: false)); // true
+  print(bool.tryParse('yes'));                        // null
+}
+```
+
+> 说明：`bool.parse` 和 `bool.tryParse` 是 Dart 3.0 引入的。
+
 ## 6. 列表：List
 
 ### 6.1 声明方式
@@ -929,6 +989,15 @@ void main() {
 ```
 
 ## 16. 内置方法速查表
+
+### 布尔
+
+| 方法 | 作用 |
+| --- | --- |
+| `!` / `&&` / `\|\|` | 取反 / 与 / 或 |
+| `toString()` | 转成 `"true"` / `"false"` |
+| `bool.parse()` | 字符串转布尔，失败抛异常 |
+| `bool.tryParse()` | 安全解析，失败返回 null |
 
 ### 数字
 
