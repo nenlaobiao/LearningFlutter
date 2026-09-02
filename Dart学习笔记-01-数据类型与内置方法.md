@@ -91,6 +91,8 @@ void main() {
 | `isNaN` | 是否不是数字 |
 | `isNegative` | 是否为负数 |
 | `sign` | 符号：`-1`、`0`、`1` |
+| `isEven` | 是否为偶数 |
+| `isOdd` | 是否为奇数 |
 | `hashCode` | 哈希码 |
 
 ```dart
@@ -102,6 +104,10 @@ void main() {
 
   double bad = 0 / 0;
   print(bad.isNaN);    // true
+
+  int n = 8;
+  print(n.isEven);     // true
+  print(n.isOdd);      // false
 }
 ```
 
@@ -500,6 +506,8 @@ void main() {
 ## 7. 集合：Set
 
 `Set` 中的元素不能重复，默认是 `LinkedHashSet`，会保留插入顺序。
+
+`forEach`/`map`/`where` 等 Iterable 通用方法同样适用。
 
 ### 7.1 声明方式
 
@@ -1062,7 +1070,7 @@ void main() {
 
 ## 建议练习
 
-1. 用 `List` 和 `map` 把一组数字全部乘以 2，并过滤出偶数。
+1. 用 `List` 和 `map` 把一组数字全部乘以 3，并过滤出偶数。
 2. 用 `Set` 对一篇文章中的单词去重，并统计单词数量。
 3. 用 `Map` 实现一个简单的学生成绩表，支持新增、更新、查询和删除。
 4. 把 `List<Map<String, Object>>` 转换成一个新的可展示字符串列表。
