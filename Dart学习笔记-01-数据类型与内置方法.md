@@ -25,6 +25,11 @@
 - [14. 常用类型转换](#14-常用类型转换)
 - [15. 综合演示](#15-综合演示)
 - [16. 内置方法速查表](#16-内置方法速查表)
+- [17. 不可变集合与安全视图](#17-不可变集合与安全视图)
+- [18. 集合拷贝与转换](#18-集合拷贝与转换)
+- [19. List 补充方法](#19-list-补充方法)
+- [20. DateTime 日期时间](#20-datetime-日期时间)
+- [21. RegExp 正则表达式](#21-regexp-正则表达式)
 
 ## 1. 前置概念
 
@@ -1068,6 +1073,237 @@ void main() {
 | `forEach()` | 遍历 |
 | `keys` / `values` / `entries` | 访问键、值、键值对 |
 
+## 17. 不可变集合与安全视图
+
+如果要把内部数据交给外部使用，又不希望外部直接修改，可以用 `unmodifiable` 系列生成只读集合。任何增删改操作都会抛 `UnsupportedError`。
+
+```dart
+void main() {
+  List<int> mutable = [1, 2, 3];
+  List<int> frozen = List.unmodifiable(mutable);
+  Map<String, int> frozenMap = Map.unmodifiable({'a': 1});
+  Set<int> frozenSet = Set.unmodifiable([1, 2, 3]);
+
+  // frozen.add(4); // 运行时报错：不能修改
+  print(frozen);   // [1, 2, 3]
+
+  // 注意：unmodifiable 生成的是快照，之后改原列表不影响它
+  mutable.add(4);
+  print(mutable); // [1, 2, 3, 4]
+  print(frozen);  // [1, 2, 3]，保持不变
+}
+```
+
+| 方法 | 说明 |
+| --- | --- |
+| `List.unmodifiable(elements)` | 生成不可变 List 快照 |
+| `Map.unmodifiable(map)` | 生成不可变 Map 快照 |
+| `Set.unmodifiable(elements)` | 生成不可变 Set 快照 |
+
+> 封装场景常用：类内部持有 `_items` 列表，只对外暴露只读视图时，getter 里写 `List.unmodifiable(_items)`，外部就改不动内部数据了。
+
+### 17.1 快照 vs 实时视图
+
+`List.unmodifiable` 是**复制一份**，之后原列表变化不会影响它。而 `dart:collection` 里的 `UnmodifiableListView` 是**视图**，直接包裹原列表，会实时反映原列表的变化：
+
+```dart
+import 'dart:collection';
+
+void main() {
+  List<int> nums = [1, 2, 3];
+  List<int> view = UnmodifiableListView(nums);
+
+  print(view);   // [1, 2, 3]
+  nums.add(4);
+  print(view);   // [1, 2, 3, 4]，视图跟着原列表变
+  // view.add(5); // 但仍不能通过视图修改
+}
+```
+
+### 17.2 `unmodifiableOf` 与 `unmodifiable` 的区别
+
+两者行为完全相同（`unmodifiableOf` 直接复用 `unmodifiable` 的实现），区别只在参数的静态类型：
+
+- `List.unmodifiable(Iterable elements)`：参数元素类型是 `dynamic`，任何集合都能传，元素类型在运行时逐个转换，类型不匹配运行时才抛异常。
+- `List.unmodifiableOf(Iterable<E> elements)`：参数是 `Iterable<E>`，编译期就检查元素类型，类型不匹配直接编译报错。
+
+```dart
+void main() {
+  // 编译通过：运行时把每个元素转成 int
+  List<int> a = List.unmodifiable(<num>[1, 2, 3]);
+
+  // 编译错误：List<num> 不能赋给 Iterable<int>
+  // List<int> b = List.unmodifiableOf(<num>[1, 2, 3]);
+
+  // 编译通过，但运行时抛异常：2.5 不是 int
+  // List<int> c = List.unmodifiable(<num>[1, 2.5]);
+
+  print(a);
+}
+```
+
+`Map.unmodifiable(Map<dynamic, dynamic>)` 和 `Map.unmodifiableOf(Map<K, V>)` 同理。`Set.unmodifiable(Iterable<E>)` 本身已是带类型参数，所以没有单独的 `unmodifiableOf`。
+
+> `unmodifiableOf` 是 Dart 3.13 新增，官方源码注释已计划弃用旧的 `unmodifiable`。新代码优先写 `unmodifiableOf`，能提前在编译期发现类型错误。
+
+## 18. 集合拷贝与转换
+
+同样是"造一个新集合"，`of` 和 `from` 有细微差别：
+
+- `List.of` / `Map.of` / `Set.of`：要求源集合的静态类型已经匹配，编译期更严格。
+- `List.from` / `Map.from` / `Set.from`：接受任意类型的源集合，运行时把每个元素强制转换（cast），类型不对会抛异常。
+
+```dart
+void main() {
+  List<int> src = [1, 2, 3];
+  List<int> copy = List.of(src); // 类型完全匹配，直接复制
+
+  List<num> wide = [1, 2, 3];    // 静态类型是 num，实际都是 int
+  List<int> narrowed = List<int>.from(wide); // 运行时逐元素 cast
+
+  print(copy);     // [1, 2, 3]
+  print(narrowed); // [1, 2, 3]
+
+  // List<num> mixed = [1, 2.5];
+  // List<int>.from(mixed); // 运行时错误：2.5 不是 int
+}
+```
+
+| 方法 | 说明 |
+| --- | --- |
+| `iterable.toList()` | 复制为新的可增长 List |
+| `iterable.toSet()` | 转成 Set（顺便去重） |
+| `List.of(elements, growable: false)` | 固定长度 List，可改元素但不能增删 |
+| `List.unmodifiable(elements)` | 完全不可变 |
+| `Map.of(map)` / `Map.from(map)` | 复制 Map |
+| `Set.of(elements)` / `Set.from(elements)` | 复制 Set |
+
+> 注意：以上都是**浅拷贝**。如果列表里装的是对象，复制后的新列表仍与原列表共享这些对象本身，修改对象属性会互相影响；只有装的是不可变值（数字、字符串）时才完全隔离。
+
+## 19. List 补充方法
+
+前面已讲增删改和 `map` / `where` / `reduce` 等，这里补充切片、区间操作和查找的变体。
+
+| 方法 | 说明 |
+| --- | --- |
+| `sublist(start, [end])` | 截取子列表（新列表） |
+| `take(n)` / `skip(n)` | 取前 n 个 / 跳过前 n 个（惰性视图） |
+| `takeWhile(test)` / `skipWhile(test)` | 按条件取 / 跳 |
+| `firstWhere(test, orElse:)` | 找第一个满足条件的，找不到走 `orElse` |
+| `lastWhere(test, orElse:)` | 找最后一个满足条件的 |
+| `singleWhere(test, orElse:)` | 唯一满足条件的元素，0 个或多个会抛异常 |
+| `indexWhere(test)` | 第一个满足条件的下标，找不到返回 -1 |
+| `retainWhere(test)` | 原地保留满足条件的，删掉其余（`removeWhere` 的反向） |
+| `fillRange(start, end, [value])` | 用值填充一段区间 |
+| `setRange(start, end, iterable)` | 用另一个可迭代对象覆盖一段区间 |
+| `replaceRange(start, end, replacement)` | 替换一段区间 |
+| `getRange(start, end)` | 一段区间的视图 |
+| `asMap()` | 下标到元素的 Map 视图 |
+| `join([separator])` | 拼成字符串 |
+
+```dart
+void main() {
+  List<int> nums = [1, 2, 3, 4, 5];
+
+  print(nums.sublist(1, 4));                          // [2, 3, 4]
+  print(nums.take(2));                                // (1, 2)
+  print(nums.skip(3).toList());                       // [4, 5]
+  print(nums.takeWhile((n) => n < 4).toList());       // [1, 2, 3]
+
+  print(nums.firstWhere((n) => n > 2));               // 3
+  print(nums.firstWhere((n) => n > 9, orElse: () => -1)); // -1
+  print(nums.indexWhere((n) => n.isEven));            // 1
+
+  List<int> copy = [...nums];
+  copy.retainWhere((n) => n.isEven);
+  print(copy); // [2, 4]
+
+  List<int> fill = [0, 0, 0, 0];
+  fill.fillRange(1, 3, 9);
+  print(fill); // [0, 9, 9, 0]
+
+  nums.setRange(0, 2, [8, 8]);
+  print(nums); // [8, 8, 3, 4, 5]
+
+  print(nums.join(' - ')); // 8 - 8 - 3 - 4 - 5
+}
+```
+
+## 20. DateTime 日期时间
+
+`DateTime` 表示时间点（不可变），`Duration` 表示时间长度。
+
+### 20.1 创建
+
+| 方式 | 说明 |
+| --- | --- |
+| `DateTime.now()` | 当前时间（本地） |
+| `DateTime(y, m, d, h, min, s)` | 指定时间（本地） |
+| `DateTime.utc(y, m, d, ...)` | 指定 UTC 时间 |
+| `DateTime.parse(s)` | 解析 ISO 8601 字符串，失败抛异常 |
+| `DateTime.tryParse(s)` | 安全解析，失败返回 null |
+
+### 20.2 常用属性与计算
+
+```dart
+void main() {
+  DateTime now = DateTime.now();
+  print(now.year);   // 年
+  print(now.month);  // 月，1-12
+  print(now.day);    // 日，1-31
+  print(now.weekday); // 星期，1=周一 ... 7=周日
+  print(now.hour);
+  print(now.minute);
+  print(now.millisecondsSinceEpoch); // 时间戳
+
+  DateTime future = now.add(Duration(days: 30, hours: 2));
+  DateTime past = now.subtract(Duration(days: 7));
+
+  Duration gap = future.difference(now);
+  print(gap.inDays);  // 30
+  print(gap.inHours); // 722
+
+  print(future.isAfter(now));   // true
+  print(past.isBefore(now));    // true
+  print(now.compareTo(past));   // 1
+  print(now.isAtSameMomentAs(now.toUtc())); // true，同一时刻
+
+  print(now.toIso8601String());
+  print(now.toLocal());
+  print(now.toUtc());
+}
+```
+
+> 比较时间用 `isAfter` / `isBefore` / `compareTo` / `isAtSameMomentAs`，不要用 `==`：两个不同时区表示的同一时刻，`==` 会判为不相等。
+
+## 21. RegExp 正则表达式
+
+正则用 `r'...'` 原始字符串书写，避免反斜杠被转义。
+
+```dart
+void main() {
+  String text = '订单号：A123，编号 B456';
+  RegExp pattern = RegExp(r'[A-Z]\d{3}');
+
+  print(pattern.hasMatch(text));                              // true
+  print(pattern.allMatches(text).map((m) => m.group(0)).toList()); // [A123, B456]
+  print(text.replaceAll(pattern, '***'));                     // 订单号：***，编号 ***
+
+  String email = 'tom@example.com';
+  bool isEmail = RegExp(r'^[\w.]+@[\w]+\.\w+$').hasMatch(email);
+  print(isEmail); // true
+}
+```
+
+| 方法 | 说明 |
+| --- | --- |
+| `regexp.hasMatch(input)` | 是否匹配 |
+| `regexp.allMatches(input)` | 所有匹配结果 |
+| `regexp.firstMatch(input)` | 第一个匹配结果 |
+| `input.replaceAll(regexp, replacement)` | 替换所有匹配 |
+| `input.replaceFirst(regexp, replacement)` | 替换第一个匹配 |
+| `input.split(regexp)` | 按正则拆分 |
+
 ## 建议练习
 
 1. 用 `List` 和 `map` 把一组数字全部乘以 3，并过滤出偶数。
@@ -1075,3 +1311,7 @@ void main() {
 3. 用 `Map` 实现一个简单的学生成绩表，支持新增、更新、查询和删除。
 4. 把 `List<Map<String, Object>>` 转换成一个新的可展示字符串列表。
 5. 练习 `int.tryParse`、`String?`、`??` 等空安全写法，处理用户输入。
+6. 把类内部的 `List` 用 `List.unmodifiable` 暴露出去，尝试修改并观察报错。
+7. 对比 `List.of`、`List.from`、`List.unmodifiable` 的行为差异，并验证浅拷贝。
+8. 用 `DateTime` 和 `Duration` 计算两个日期相差的天数，以及某日期 30 天后的星期几。
+9. 用 `RegExp.allMatches` 从一段文本里提取所有手机号或数字编号。
