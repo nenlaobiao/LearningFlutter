@@ -136,7 +136,7 @@ void answer4() {
   print(strStack.push('333'));
   print(strStack.peek);
   print(strStack.pop());
-  print(strStack.value[0]='000');
+  // print(strStack.value[0]='000'); 报错 这里使用了unmodifiable
   print(strStack.value);
   print(strStack.isEmpty);
   print(strStack.length);
@@ -144,7 +144,26 @@ void answer4() {
 }
 
 // 5. 写一个 `mixin JsonLogger`（记录每次读写的字段名），让 `User` 类 `with` 它；再给 `String` 写一个 `toTitleCase` 扩展方法。
-void answer5() {}
+
+mixin JsonLogger {
+  final List<String> _log = [];
+  var _data = DateTime.now();
+  get log => List.unmodifiable(_log);
+  String operator [](String key){
+    return '1';
+  }
+}
+class User with JsonLogger{
+  final String name;
+  final int age;
+  User(this.name,this.age);
+}
+
+void answer5() {
+  var xiaoMing = User('小明',18);
+  print(xiaoMing['name']);
+
+}
 
 // 6. 给 `Vector` 类补上 `-` 运算符重载，并解释为什么重写 `==` 时必须重写 `hashCode`。
 void answer6() {}
@@ -153,7 +172,7 @@ void main() {
   // answer1();
   // answer2();
   // answer3();
-  answer4();
+  // answer4();
   answer5();
   answer6();
 }
