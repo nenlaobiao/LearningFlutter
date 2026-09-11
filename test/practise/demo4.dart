@@ -117,7 +117,6 @@ class Stack<T> {
   T pop() {
     var val = _value.removeLast();
     return val;
-
   }
 
   T get peek => _value.last;
@@ -147,26 +146,122 @@ void answer4() {
 
 mixin JsonLogger {
   final List<String> _log = [];
-  var _data = DateTime.now();
+
+  void logRead(String field, Object value) {
+    var _data = DateTime.now();
+    _log.add('读取: $field , 值: $value ,时间: $_data');
+  }
+
+  void logWrite(String field, Object value) {
+    var _data = DateTime.now();
+    _log.add('写入: $field , 值: $value ,时间: $_data');
+  }
+
   get log => List.unmodifiable(_log);
-  String operator [](String key){
-    return '1';
+}
+
+class User with JsonLogger {
+  String name;
+  int age;
+  User(this.name, this.age);
+  operator [](String field) {
+    Object value = switch (field) {
+      'name' => name,
+      'age' => age,
+      _ => '属性不存在',
+    };
+    logRead(field, value);
+    return value;
+  }
+
+  operator []=(String field, Object value) {
+    switch (field) {
+      case 'name':
+        if (value is String) {
+          name = value;
+        } else {
+          throw ArgumentError('name 必须是 String');
+        }
+
+      case 'age':
+        if (value is int) {
+          age = value;
+        } else {
+          throw ArgumentError('age 必须是 int');
+        }
+
+      default:
+        throw ArgumentError('属性不存在：$field');
+    }
+
+    logWrite(field, value);
   }
 }
-class User with JsonLogger{
-  final String name;
-  final int age;
-  User(this.name,this.age);
+
+extension StringExpand on String {
+  String toTitleCase() {
+    if (isNotEmpty) {
+      return split(' ')
+          .map(
+            (str) => str.isEmpty
+                ? str
+                : '${str[0].toUpperCase()}${str.substring(1)}',
+          )
+          .join(' ');
+    }
+    return this;
+  }
 }
 
 void answer5() {
-  var xiaoMing = User('小明',18);
+  var xiaoMing = User('小明', 18);
   print(xiaoMing['name']);
-
+  print(xiaoMing['age'] = 10);
+  print(xiaoMing.log);
+  String name = 'hello dart';
+  print(name.toTitleCase());
 }
 
 // 6. 给 `Vector` 类补上 `-` 运算符重载，并解释为什么重写 `==` 时必须重写 `hashCode`。
-void answer6() {}
+
+class Vector {
+  final double x;
+  final double y;
+
+  const Vector(this.x, this.y);
+
+  Vector operator -(Vector other) {
+    return Vector(x - other.x, y - other.y);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is Vector && other.x == x && other.y == y;
+  }
+
+  @override
+  get hashCode => Object.hash(x, y); 
+  // 为什么重写 == 时必须重写 hashCode？
+  //
+  // Dart 有一项规则：如果两个对象相等，那么它们必须拥有相同的 hashCode。
+  // 默认情况下，== 通常用于判断对象的身份是否相同。
+  // 重写 == 后，我们改变了对象相等的判断规则。
+  // 例如 Vector 中，只要 x 和 y 相同，就认为两个 Vector 相等。
+  // 因此需要重写 hashCode，并使用相同的字段（x、y）计算 hashCode，
+  // 从而保证相等的 Vector 拥有相同的 hashCode。
+
+  @override
+  String toString() => 'Vector($x, $y)';
+}
+
+void answer6() {
+  var v1 = Vector(1, 2);
+  var v2 = Vector(3, 4);
+  var v3 = Vector(2, 2);
+  v2 = v2 - v3;
+  print(v2);
+  print(v2 == v1);
+}
 
 void main() {
   // answer1();
