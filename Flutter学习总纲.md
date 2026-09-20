@@ -311,7 +311,7 @@
 | Flutter 03 | Flutter学习笔记-03-列表与表单.md | ListView、Form、校验 | ✅ 已生成 |
 | Flutter 04 | Flutter学习笔记-04-路由与页面组织.md | Navigator、go_router、传参、Tab | ✅ 已生成 |
 | Flutter 05 | Flutter学习笔记-05-状态管理.md | setState 局限、Provider、Riverpod | ✅ 已生成 |
-| Flutter 06 | Flutter学习笔记-06-网络请求.md | dio、拦截器、JSON 序列化 | 📅 计划 |
+| Flutter 06 | Flutter学习笔记-06-网络请求.md | dio、拦截器、JSON 序列化 | ✅ 已生成 |
 | Flutter 07 | Flutter学习笔记-07-本地存储.md | shared_preferences、sqflite、Token | 📅 计划 |
 | Flutter 08 | Flutter学习笔记-08-主题与动画.md | ThemeData、隐式动画、Hero | 📅 计划 |
 | Flutter 09 | Flutter学习笔记-09-工程化与打包.md | 目录、多环境、release | 📅 计划 |
