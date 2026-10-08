@@ -312,10 +312,10 @@
 | Flutter 04 | Flutter学习笔记-04-路由与页面组织.md | Navigator、go_router、传参、Tab | ✅ 已生成 |
 | Flutter 05 | Flutter学习笔记-05-状态管理.md | setState 局限、Provider、Riverpod | ✅ 已生成 |
 | Flutter 06 | Flutter学习笔记-06-网络请求.md | dio、拦截器、JSON 序列化 | ✅ 已生成 |
-| Flutter 07 | Flutter学习笔记-07-本地存储.md | shared_preferences、sqflite、Token | 📅 计划 |
-| Flutter 08 | Flutter学习笔记-08-主题与动画.md | ThemeData、隐式动画、Hero | 📅 计划 |
-| Flutter 09 | Flutter学习笔记-09-工程化与打包.md | 目录、多环境、release | 📅 计划 |
-| Flutter 10 | Flutter学习笔记-10-复盘与补漏.md | 完整跑通、自检、补笔记 | 📅 计划 |
+| Flutter 07 | Flutter学习笔记-07-本地存储.md | shared_preferences、sqflite、Token 持久化 | ✅ 已生成 |
+| Flutter 08 | Flutter学习笔记-08-主题与动画.md | ThemeData、深色模式、隐式/显式动画、Hero | ✅ 已生成 |
+| Flutter 09 | Flutter学习笔记-09-工程化与打包.md | 目录分层、多环境、release 签名打包 | ✅ 已生成 |
+| Flutter 10 | Flutter学习笔记-10-复盘与补漏.md | 知识地图、全链路走查、毕业自检、收尾 | ✅ 已生成 |
 
 ## 八、资源
 

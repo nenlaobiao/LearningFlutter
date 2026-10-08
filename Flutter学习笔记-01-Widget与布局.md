@@ -203,6 +203,8 @@ class _CounterState extends State<Counter> {
 
 你以后看到“Widget 和 State 分离”的结构，都是这个模式。
 
+> 这两个类在后面 Day 5 上 Riverpod 时各有一个「能订阅全局状态」的版本（`ConsumerWidget` / `ConsumerStatefulWidget` + `ConsumerState`），到时候类要改成什么、`build` 为什么多一个 `ref` 参数，见 [Flutter学习笔记-05-状态管理.md](Flutter学习笔记-05-状态管理.md) 第 5 节。
+
 ## 8. setState：为什么改变量界面不变
 
 这是从 Vue 转 Flutter 时最容易踩的第一个坑：

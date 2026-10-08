@@ -517,9 +517,9 @@ class ProfilePage extends StatelessWidget {
 
 完成下面三件事，Day 4 才算通过：
 
-- [ ] 商品列表 → 详情页，能传商品 id，点「加入购物车」能带回结果
-- [ ] 用 `BottomNavigationBar` 搭出「首页 / 购物车 / 我的」三 tab 骨架
-- [ ] 登录成功后用 `pushReplacement` 跳首页，返回键回不到登录页
+- [x] 商品列表 → 详情页，能传商品 id，点「加入购物车」能带回结果
+- [x] 用 `BottomNavigationBar` 搭出「首页 / 购物车 / 我的」三 tab 骨架
+- [x] 登录成功后用 `pushReplacement` 跳首页，返回键回不到登录页
 
 如果你能回答下面三个问题，就可以进入 Day 5（状态管理）：
 
